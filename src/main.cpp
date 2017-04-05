@@ -2,7 +2,7 @@
 #include "math.h"
 const float base = 10000;
 void drawPoint(float x,float y,float R,float G,float B);
-void drawLint_DDA(float x1,float y1,float x2,float y2,float R,float G,float B);
+void drawLint_Print(float x1,float y1,float x2,float y2,float R,float G,float B);
 int main(void)
 {
     GLFWwindow* window;
@@ -32,7 +32,7 @@ int main(void)
         // {
         //     drawPoint(i,i,1.0, 0.0, 0.0);
         // }
-        drawLint_DDA(0,0,1,1,1.0,0.0,0.0);
+        drawLint_Print(0,0,1,1,1.0,0.0,0.0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -59,13 +59,13 @@ void drawPoint(float x,float y,float R,float G,float B)
 }
 /*
 Line
-DDA(数值微分划线算法)：直线生成算法中最简单的一种
+逐点比较法：直线生成算法中最简单的一种
 算法：
 1）根据直线的斜率(|k|>=1:y |k|<1:x)确定是以X还是以Y方向前进一步
 2）前进一个像素点，并更新斜率
 重复1）2）
 */
-void drawLint_DDA(float x1,float y1,float x2,float y2,float R,float G,float B)
+void drawLint_Print(float x1,float y1,float x2,float y2,float R,float G,float B)
 {
     double dx,dy,temp_x = x1,temp_y = y1;
     dx = x2-x1;
