@@ -1,8 +1,14 @@
 #include <GLFW/glfw3.h>
 #include "math.h"
+
+#include "iostream"
+using namespace std;
+
+const float pointSize = 0.5;
 const float base = 10000;
 void drawPoint(float x,float y,float R,float G,float B);
 void drawLint_Print(float x1,float y1,float x2,float y2,float R,float G,float B);
+void drawLint_DDA(float x1,float y1,float x2,float y2,float R,float G,float B);
 int main(void)
 {
     GLFWwindow* window;
@@ -33,6 +39,7 @@ int main(void)
         //     drawPoint(i,i,1.0, 0.0, 0.0);
         // }
         drawLint_Print(0,0,1,1,1.0,0.0,0.0);
+        drawLint_DDA(0,0,1,0.5,1.0,0.0,0.0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -48,10 +55,10 @@ int main(void)
 /*
 x,y - position R,G,B - color
 */
-void drawPoint(float x,float y,float R,float G,float B)
+void drawPoint(float x,float y,float R,float G,float B,float pointSize)
 {
     /* Draw a point */      
-    glPointSize(0.5f);
+    glPointSize(pointSize);
     glBegin(GL_POINTS);
         glColor3f(R,G,B);
         glVertex2f(x,y);
@@ -87,7 +94,7 @@ void drawLint_Print(float x1,float y1,float x2,float y2,float R,float G,float B)
                 if(temp_y<y2)
                     break;
             }
-            drawPoint(temp_x,temp_y,R,G,B);
+            drawPoint(temp_x,temp_y,R,G,B,pointSize);
             k = fabs((y2-temp_y)/(x2-temp_x));
         }else
         {
@@ -103,8 +110,36 @@ void drawLint_Print(float x1,float y1,float x2,float y2,float R,float G,float B)
                 if(temp_x <x2)
                     break;
             }
-            drawPoint(temp_x,temp_y,R,G,B);
+            drawPoint(temp_x,temp_y,R,G,B,pointSize);
             k = fabs((y2-temp_y)/(x2-temp_x));
         }
     }
 }
+/*
+Line
+DDA(数值微分划线算法)
+算法：
+1）根据直线的斜率(|k|>=1:y |k|<1:x)确定是以X还是以Y方向前进1个距离,另一个方向前进1/k个距离
+2）前进后重新进入步骤1）
+重复1）2）
+*/
+void drawLint_DDA(float x1,float y1,float x2,float y2,float R,float G,float B)
+{
+    float dm = 0,dx = 0,dy = 0;
+    if(fabs(x2-x1) >= fabs(y2-y1))
+    {
+        dm = fabs(x2-x1);
+    }else
+    {
+        dm = fabs(y2-y1);
+    }
+    dx = (float)(x2-x1)/(dm*base);
+    dy = (float)(y2-y1)/(dm*base);
+    for(float i=0;i<dm*base;i++)
+    {;
+        drawPoint(x1,y1,R,G,B,pointSize);
+        x1+=dx;
+        y1+=dy;
+    }
+}
+
