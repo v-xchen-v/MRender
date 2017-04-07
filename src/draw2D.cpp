@@ -7,17 +7,18 @@
 using namespace std;
 
 const float mrender_pointSize = 0.5;
-const float base = 10000;
+const float base = 1000;
+
 /*
 x,y - position R,G,B - color
 */
-void drawPoint(float x,float y,float R,float G,float B,float pointSize)
+void drawPoint(point2D point,float R,float G,float B,float pointSize)
 {
     /* Draw a point */      
     glPointSize(mrender_pointSize);
     glBegin(GL_POINTS);
         glColor3f(R,G,B);
-        glVertex2f(x,y);
+        glVertex2f(point.x,point.y);
     glEnd();
 }
 /*
@@ -27,12 +28,13 @@ Line
 1）根据直线的斜率(|k|>=1:y |k|<1:x)确定是以X还是以Y方向前进一步
 2）前进一个像素点，并更新斜率
 重复1）2）
+有问题，待修改
 */
-void drawLine_Print(float x1,float y1,float x2,float y2,float R,float G,float B)
+void drawLine_Print(point2D point1,point2D point2,float R,float G,float B)
 {
-    double dx,dy,temp_x = x1,temp_y = y1;
-    dx = x2-x1;
-    dy = y2-y1;
+    double dx,dy,temp_x = point1.x,temp_y = point1.y;
+    dx = point2.x-point1.x;
+    dy = point2.y-point1.y;
     double k = fabs(dy/dx);
     while(1)
     {
@@ -41,33 +43,35 @@ void drawLine_Print(float x1,float y1,float x2,float y2,float R,float G,float B)
             if(dy>0)
             {
                 temp_y+=1/base;
-                if(temp_y>y2)
+                if(temp_y>point2.y)
                     break;
             }
             else
             {
                 temp_y-=1/base;
-                if(temp_y<y2)
+                if(temp_y<point2.y)
                     break;
             }
-            drawPoint(temp_x,temp_y,R,G,B,mrender_pointSize);
-            k = fabs((y2-temp_y)/(x2-temp_x));
+            point2D tempP(temp_x,temp_y);
+            drawPoint(tempP,R,G,B,mrender_pointSize);
+            k = fabs((point2.y-temp_y)/(point2.x-temp_x));
         }else
         {
             if(dx>0)
             {
                 temp_x+=1/base;
-                if(temp_x > x2)
+                if(temp_x > point2.x)
                     break;
             }
             else
             {
                 temp_x-=1/base;
-                if(temp_x <x2)
+                if(temp_x < point2.x)
                     break;
             }
-            drawPoint(temp_x,temp_y,R,G,B,mrender_pointSize);
-            k = fabs((y2-temp_y)/(x2-temp_x));
+            point2D tempP(temp_x,temp_y);
+            drawPoint(tempP,R,G,B,mrender_pointSize);
+            k = fabs((point2.y-temp_y)/(point2.x-temp_x));
         }
     }
 }
@@ -79,23 +83,24 @@ DDA(数值微分划线算法)
 2）前进后重新进入步骤1）
 重复1）2）
 */
-void drawLine_DDA(float x1,float y1,float x2,float y2,float R,float G,float B)
+void drawLine_DDA(point2D point1,point2D point2,float R,float G,float B)
 {
     float dm = 0,dx = 0,dy = 0;
-    if(fabs(x2-x1) >= fabs(y2-y1))
+    if(fabs(point2.x-point1.x) >= fabs(point2.y-point1.y))
     {
-        dm = fabs(x2-x1);
+        dm = fabs(point2.x-point1.x);
     }else
     {
-        dm = fabs(y2-y1);
+        dm = fabs(point2.y-point1.y);
     }
-    dx = (float)(x2-x1)/(dm*base);
-    dy = (float)(y2-y1)/(dm*base);
+    dx = (float)(point2.x-point1.x)/(dm*base);
+    dy = (float)(point2.y-point1.y)/(dm*base);
     for(float i=0;i<dm*base;i++)
-    {;
-        drawPoint(x1,y1,R,G,B,mrender_pointSize);
-        x1+=dx;
-        y1+=dy;
+    {
+        point2D tempPoint(point1.x,point1.y);
+        drawPoint(tempPoint,R,G,B,mrender_pointSize);
+        point1.x+=dx;
+        point1.y+=dy;
     }
 }
 
@@ -127,7 +132,7 @@ Bresenham画线算法：应用最广泛的直线生成算法
 // }
 
 /*
-         (x1,y2)
+         (x1,y1)
         /      \
        /        \
       /          \
@@ -137,14 +142,17 @@ Bresenham画线算法：应用最广泛的直线生成算法
     
 
 */
-void drawTriangle_flatBottom(float x1,float y1,float x2,float y2,float x3,float y3,float R,float G,float B)
+                        
+void drawTriangle_flatBottom(point2D point1,point2D point2,point2D point3,float R,float G,float B)
 {
-    for(float i = y1; i>=y2 ;i-=1/base)
+    for(float i = point1.y; i>=point2.y ;i-=1/base)
     {
-        float xl = (i-y1)*(x2-x1)/(y2-y1)+x1;
-        float xr = (i-y1)*(x3-x1)/(y3-y1)+x1;
+        float xl = (i-point1.y)*(point2.x-point1.x)/(point2.y-point1.y)+point1.x;
+        float xr = (i-point1.y)*(point3.x-point1.x)/(point3.y-point1.y)+point1.x;
         cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatBottom"<<endl;
-        drawLine_DDA(xl,i,xr,i,R,G,B);
+        point2D point1(xl,i);
+        point2D point2(xr,i);
+        drawLine_DDA(point1,point2,R,G,B);
     }
 }
 /*
@@ -155,14 +163,16 @@ void drawTriangle_flatBottom(float x1,float y1,float x2,float y2,float x3,float 
                \       /
                 (x3,y3)
 */
-void drawTriangle_flatTop(float x1,float y1,float x2,float y2,float x3,float y3,float R,float G,float B)
+void drawTriangle_flatTop(point2D point1,point2D point2,point2D point3,float R,float G,float B)
 {
-    for(float i = y1; i>=y3 ;i-=1/base)
+    for(float i = point1.y; i>=point3.y ;i-=1/base)
     {
-        float xl = (i-y3)*(x1-x3)/(y1-y3)+x3;
-        float xr = (i-y3)*(x2-x3)/(y2-y3)+x3;
+        float xl = (i-point3.y)*(point1.x-point3.x)/(point1.y-point3.y)+point3.x;
+        float xr = (i-point3.y)*(point2.x-point3.x)/(point2.y-point3.y)+point3.x;
         cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatTop"<<endl;
-        drawLine_DDA(xl,i,xr,i,R,G,B);
+        point2D temp1(xl,i);
+        point2D temp2(xr,i);
+        drawLine_DDA(temp1,temp2,R,G,B);
     }
 }
 /*
@@ -179,46 +189,47 @@ void drawTriangle_flatTop(float x1,float y1,float x2,float y2,float x3,float y3,
                       \| 
                       (xbottom,ybottom)
 */
+                      
 bool comp(pair<float,float>y_pair1,pair<float,float>y_pair2)
 {
     return y_pair1.second>y_pair2.second; //float浮点数比较？
 }
-void drawTriangle(float x1,float y1,float x2,float y2,float x3,float y3,float R,float G,float B)
+void drawTriangle(point2D point1,point2D point2,point2D point3,float R,float G,float B)
 {
     float xtop,ytop,xmid,ymid,xtmp,xbottom,ybottom;
-    if(y1 == y2)
+    if(point1.y == point2.y)
     {
-        if(y3>=y1)
+        if(point3.y>=point1.y)
         {
-            drawTriangle_flatBottom(x3,y3,x1,y1,x2,y2,R,G,B);
+            drawTriangle_flatBottom(point3,point1,point2,R,G,B);
         }else
         {
-            drawTriangle_flatTop(x1,y1,x2,y2,x3,y3,R,G,B);
+            drawTriangle_flatTop(point1,point2,point3,R,G,B);
         }
-    }else if(y1 == y3)
+    }else if(point1.y == point3.y)
     {
-        if(y2>= y1)
+        if(point2.y >= point1.y)
         {
-            drawTriangle_flatBottom(x2,y2,x1,y1,x3,y3,R,G,B);
+            drawTriangle_flatBottom(point2,point1,point3,R,G,B);
         }else
         {
-            drawTriangle_flatTop(x1,y1,x3,y3,x2,y2,R,G,B);
+            drawTriangle_flatTop(point1,point3,point2,R,G,B);
         }
-    }else if(y2 == y3)
+    }else if(point2.y == point3.y)
     {
-        if(y1>=y2)
+        if(point1.y>=point2.y)
         {
-            drawTriangle_flatBottom(x1,y1,x2,y2,x3,y3,R,G,B);
+            drawTriangle_flatBottom(point1,point2,point3,R,G,B);
         }else
         {
-            drawTriangle_flatTop(x2,y2,x3,y3,x1,y1,R,G,B);
+            drawTriangle_flatTop(point2,point3,point1,R,G,B);
         }
     }else //如果不是平顶、平底三角形
     {
         vector<pair<float,float>>vc;
-        vc.push_back(make_pair(x1,y1));
-        vc.push_back(make_pair(x2,y2));
-        vc.push_back(make_pair(x3,y3));
+        vc.push_back(make_pair(point1.x,point1.y));
+        vc.push_back(make_pair(point2.x,point2.y));
+        vc.push_back(make_pair(point3.x,point3.y));
         sort(vc.begin(),vc.end(),comp);
         xtop = vc[0].first;
         ytop = vc[0].second;
@@ -228,7 +239,11 @@ void drawTriangle(float x1,float y1,float x2,float y2,float x3,float y3,float R,
         ybottom = vc[2].second;
         xtmp = (ymid-ytop)*(xbottom-xtop)/(ybottom-ytop)+xtop;
         cout<<xtop<<" "<<ytop<<" "<<xmid<<" "<<ymid<<" "<<xbottom<<" "<<ybottom<<" "<<xtmp<<endl;
-        drawTriangle_flatBottom(xtop,ytop,xtmp,ymid,xmid,ymid,R,G,B);
-        drawTriangle_flatTop(xmid,ymid,xtmp,ymid,xbottom,ybottom,R,G,B);
+        point2D top(xtop,ytop);
+        point2D tmp(xtmp,ymid);
+        point2D mid(xmid,ymid);
+        point2D bottom(xbottom,ybottom);
+        drawTriangle_flatBottom(top,tmp,mid,R,G,B);
+        drawTriangle_flatTop(mid,tmp,bottom,R,G,B);
     }
 }
