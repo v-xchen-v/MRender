@@ -11,7 +11,7 @@ using namespace std;
 const float R = 1.0;
 const float G = 0.0;
 const float B = 0.0;
-void drawCube(vector<vector<float>>vertexList)
+void drawCube_wireframe(vector<vector<float>>vertexList)
 {
     //一个12*2的二维数组，用于存放立方体线的两端顶点号
     vector<vector<int>>lineVIndex = {
@@ -36,6 +36,51 @@ void drawCube(vector<vector<float>>vertexList)
     }
 }
 
+/*
+立方体有8个顶点6个面，每个面有4个顶点，每个面都可以分成两个三角形画出
+画一个立方体，就是画12个三角形
+*/
+void drawCube_fillcolor(vector<vector<float>>vertexList)
+{
+    //一个12*2的二维数组，用于存放立方体线的两端顶点号
+    vector<vector<int>>lineVIndex = {
+        // {0, 1},    
+        // {2, 3},    
+        // {4, 5},    
+        // {6, 7},    
+        // {0, 2},    
+        // {1, 3},    
+        // {4, 6},    
+        // {5, 7},
+        // {0, 4},
+        // {1, 5},
+        // {7, 3},
+        // {2, 6}
+        //通过固定画面的顺序，强行消隐藏
+        {0, 1 ,3},    
+        {0, 2, 3},  
+        {0, 4, 6},    
+        {0, 2, 6},
+        {1, 4, 5},
+        {0, 1, 4},    
+        {6, 3, 7},    
+        {6, 2, 3}, 
+        {4, 5, 7},    
+        {4, 6, 7},
+        {1, 5, 7},
+        {1, 3, 7}
+    };
+    for(int i=0;i<12;i++)
+    {
+        point2D point1(vertexList[lineVIndex[i][0]][0],vertexList[lineVIndex[i][0]][1]);
+        point2D point2(vertexList[lineVIndex[i][1]][0],vertexList[lineVIndex[i][1]][1]);
+        point2D point3(vertexList[lineVIndex[i][2]][0],vertexList[lineVIndex[i][2]][1]);
+        if(i%2==0)
+            drawTriangle(point1,point2,point3,1,0,0);
+        else
+            drawTriangle(point1,point2,point3,0,0,1);
+    }
+}
 // isometric orthographic projection  正等侧面投影
 /*
 将3D实体绕z轴逆时针旋转a角

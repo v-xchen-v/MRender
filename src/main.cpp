@@ -124,7 +124,8 @@ int main(void)
         //     }
         //     cout<<endl;
         // }
-        drawCube(after);
+        drawCube_wireframe(after);
+        drawCube_fillcolor(after);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
