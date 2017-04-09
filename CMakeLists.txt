@@ -26,7 +26,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/glfw)
 include_directories ( ${PROJECT_SOURCE_DIR}/src)
 
 # 添加要编译的cpp源代码，先只要一个main.cpp
-set(SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cpp)
+set(SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/draw2D.cpp ${PROJECT_SOURCE_DIR}/src/matrix.cpp ${PROJECT_SOURCE_DIR}/src/draw3D.cpp)
 
 # 添加项目的构建目标，一个可执行程序，叫：${PROJECT_NAME}, 也就是文件开头定义的 “MRender”
 add_executable(${PROJECT_NAME} ${SRC_LIST})

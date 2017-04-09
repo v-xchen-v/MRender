@@ -1,4 +1,6 @@
 #include "draw2D.h"
+#include "matrix.h"
+
 #include <GLFW/glfw3.h>
 #include "math.h"
 #include "iostream"
@@ -9,6 +11,7 @@ using namespace std;
 const float mrender_pointSize = 0.5;
 const float base = 1000;
 
+//图形绘制
 /*
 x,y - position R,G,B - color
 */
@@ -246,4 +249,120 @@ void drawTriangle(point2D point1,point2D point2,point2D point3,float R,float G,f
         drawTriangle_flatBottom(top,tmp,mid,R,G,B);
         drawTriangle_flatTop(mid,tmp,bottom,R,G,B);
     }
+}
+
+
+//图形变换
+
+//假设是一个三角形，缩放
+//两个参数Sx，Sy分别表示在X轴、Y轴上的缩放比例
+void resizer2DGraphics(point2D point1,point2D point2,point2D point3,float Sx,float Sy)
+{
+    vector<vector<float>>arrA,arrB,result;
+    matrix2D matrix2d;
+    matrix2d.resizer(Sx,Sy);
+    // cout<<"m2d[0]:"<<matrix2d.matrix[0][0]<<" "<<matrix2d.matrix[0][1]<<" "<<matrix2d.matrix[0][2]<<endl;
+    // cout<<"m2d[1]:"<<matrix2d.matrix[1][0]<<" "<<matrix2d.matrix[1][1]<<" "<<matrix2d.matrix[1][2]<<endl;
+    // cout<<"m2d[2]:"<<matrix2d.matrix[2][0]<<" "<<matrix2d.matrix[2][1]<<" "<<matrix2d.matrix[2][2]<<endl;
+
+    // cout<<"mp[0]:"<<tmp.matrix[0][0]<<endl;
+    // cout<<"mp[1]:"<<tmp.matrix[0][1]<<endl;
+    // cout<<"mp[2]:"<<tmp.matrix[0][2]<<endl;
+    
+    // for(int i=0;i<arrA.size();i++)
+    // {
+    //     for(int j=0;j<arrA[0].size();j++)
+    //     {
+    //         cout<<arrA[i][j]<<" ";
+    //     }
+    //     cout<<endl;
+    // }
+    arrB = matrix2d.getMatrixData();
+    // for(int i=0;i<arrB.size();i++)
+    // {
+    //     for(int j=0;j<arrB[0].size();j++)
+    //     {
+    //         cout<<arrB[i][j]<<" ";
+    //     }
+    //     cout<<endl;
+    // }
+    matrixPoint tmp(point1);
+    arrA = tmp.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint1(result[0][0],result[0][1]);
+
+    matrixPoint tmp2(point2);
+    arrA = tmp2.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint2(result[0][0],result[0][1]);
+
+    matrixPoint tmp3(point3);
+    arrA = tmp3.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint3(result[0][0],result[0][1]);
+    drawTriangle(newPoint1,newPoint2,newPoint3,0,1,0);
+}
+
+void translate2DGraphics(point2D point1,point2D point2,point2D point3,float Sx,float Sy)
+{
+    // matrixPoint matrix1(point1);
+    // matrix1.matrix[0][0] += Sx;
+    // matrix1.matrix[0][1] += Sy;
+    // point1.update(matrix1);
+    
+    // matrixPoint matrix2(point2);
+    // matrix2.matrix[0][0] += Sx;
+    // matrix2.matrix[0][1] += Sy;
+    // point2.update(matrix2);
+
+    // matrixPoint matrix3(point3);
+    // matrix3.matrix[0][0] += Sx;
+    // matrix3.matrix[0][1] += Sy;
+    // point3.update(matrix3);
+
+    point1.x += Sx;
+    point1.y += Sy;
+
+    point2.x += Sx;
+    point2.y += Sy;
+
+    point3.x += Sx;
+    point3.y += Sy;
+    drawTriangle(point1,point2,point3,0,0,1);
+}
+/*
+以逆时针为正角度
+旋转a度
+
+x' = xcosa - ysina;
+y' = xsina + ycosa; 
+[x' y' 1] = [x y 1][ cosa sina 0]
+                   [-sina cosa 0]
+                   [   0   0   1]
+*/
+void rotate2DGraphcis(point2D point1,point2D point2,point2D point3,float a)
+{
+    vector<vector<float>>arrA,arrB,result;
+    matrix2D matrix2d;
+    matrix2d.rotate(a);
+    arrB = matrix2d.getMatrixData();
+    // cout<<"m2d[0]:"<<matrix2d.matrix[0][0]<<" "<<matrix2d.matrix[0][1]<<" "<<matrix2d.matrix[0][2]<<endl;
+    // cout<<"m2d[1]:"<<matrix2d.matrix[1][0]<<" "<<matrix2d.matrix[1][1]<<" "<<matrix2d.matrix[1][2]<<endl;
+    // cout<<"m2d[2]:"<<matrix2d.matrix[2][0]<<" "<<matrix2d.matrix[2][1]<<" "<<matrix2d.matrix[2][2]<<endl;
+
+    matrixPoint tmp(point1);
+    arrA = tmp.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint1(result[0][0],result[0][1]);
+
+    tmp.setValue(point2);
+    arrA = tmp.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint2(result[0][0],result[0][1]);
+
+    tmp.setValue(point3);
+    arrA = tmp.getMatrixData();
+    result = matrix_multiply(arrA,arrB);
+    point2D newPoint3(result[0][0],result[0][1]);
+    drawTriangle(newPoint1,newPoint2,newPoint3,1,0,0);
 }
