@@ -1,6 +1,7 @@
 #include "draw2D.h"
 #include "matrix.h"
 #include "draw3D.h"
+#include "settings.h"
 
 #include <GLFW/glfw3.h>
 #include "math.h"
@@ -12,6 +13,26 @@ using namespace std;
 const float R = 1.0;
 const float G = 0.0;
 const float B = 0.0;
+vector<vector<zBufferPoint>> zBufferMatrix(1000,vector<zBufferPoint>(1000));
+void showZbufferGraphcis()
+{
+    //draw by zBufferMatrix
+        // int count =0;
+        for(int i=0;i<base*2;i++)
+        {
+            for(int j=0;j<base*2;j++)
+            {
+                if(zBufferMatrix[i][j].R)
+                {
+                    // count++;
+                    // cout<<"R:1 "<<count<<" "<<i<<" "<<j<<endl;
+                }
+                // cout<<"i-j"<<i<<"-"<<j<<" R "<<zBufferMatrix[i][j].R<<" G "<<zBufferMatrix[i][j].G<<" B "<<zBufferMatrix[i][j].B<<endl;
+                point2D point((i-base)/base,(j-base)/base);
+                drawPoint(point,zBufferMatrix[i][j].R,zBufferMatrix[i][j].G,zBufferMatrix[i][j].B,mrender_pointSize);
+            }
+        }
+}
 
 void testDrawPoint()
 {
@@ -21,12 +42,26 @@ void testDrawPoint()
         drawPoint(point,1.0, 0.0, 0.0, mrender_pointSize);
     }    
 }
+void testSetPointColor()
+{
+    for(float i=0;i<1;i+=0.01)
+    {
+        point2D point(i,i);
+        setPointColor(point,1.0, 0.0, 0.0,-1);
+    } 
+}
 void testDrawLine()
 {
     point2D point1(0,0);
     point2D point2(1,0.5);
     drawLine_Print(point1,point2,1.0,0.0,0.0);
     // drawLine_DDA(point1,point2,1.0,0,0);
+}
+void testSetLineColor()
+{
+    point2D point1(0,0);
+    point2D point2(1,0.5);
+    setLineColor(point1,point2,1, 0, 0,-1);
 }
 void testDrawTriangle()
 {
@@ -44,6 +79,23 @@ void testDrawTriangle()
     point2D point8(-1,-0.75);
     point2D point9(-0.5,-0.25);
     drawTriangle(point7,point8,point9,0.0,0.0,1.0);
+}
+void testSetTriangleColor()
+{
+    point2D point3(-0.25,0.6);
+    point2D point2(0.25,0.6);
+    point2D point1(0,1);
+    setTriangleColor_flatBottom(point1,point2,point3,1.0,0.0,0.0,-1);
+
+    point2D point4(0,0);
+    point2D point5(-0.25,0.4);
+    point2D point6(0.25,0.4);
+    setTriangleColor_flatTop(point5,point6,point4,0.0,1.0,0.0,-1);
+
+    point2D point7(0,0);
+    point2D point8(-1,-0.75);
+    point2D point9(-0.5,-0.25);
+    setTriangleColor(point7,point8,point9,0.0,0.0,1.0,-1);
 }
 void testResize2D()
 {
@@ -68,6 +120,56 @@ void testRotate2D()
     point2D point8(-1,-0.75);
     point2D point9(-0.5,-0.25);
     rotate2DGraphcis(point7,point8,point9,90);
+}
+void testRotate3DXYZ()
+{
+    vector<vector<float>>cubeVertex = 
+    {
+        //x,y,z
+        {-0.5f, -0.5f, -0.5f}, 
+        {0.5f, -0.5f, -0.5f}, 
+        {-0.5f, 0.5f, -0.5f}, 
+        {0.5f, 0.5f, -0.5f}, 
+        {-0.5f, -0.5f, 0.5f}, 
+        {0.5f, -0.5f, 0.5f}, 
+        {-0.5f, 0.5f, 0.5f}, 
+        {0.5f, 0.5f, 0.5f} 
+    };
+     
+    //test rotatex rotatey rotatez
+    vector<vector<float>>after = RotatebyX(cubeVertex,5);
+    vector<vector<float>>after2 = RotatebyY(after,5);
+    vector<vector<float>>after3 = RotatebyZ(after2,5);
+    // drawCube_wireframe(after3);
+    drawCube_fillcolor(after3);
+  
+}
+void testRotate3D()
+{
+    vector<vector<float>>cubeVertex = 
+    {
+        //x,y,z
+        {-0.5f, -0.5f, -0.5f}, 
+        {0.5f, -0.5f, -0.5f}, 
+        {-0.5f, 0.5f, -0.5f}, 
+        {0.5f, 0.5f, -0.5f}, 
+        {-0.5f, -0.5f, 0.5f}, 
+        {0.5f, -0.5f, 0.5f}, 
+        {-0.5f, 0.5f, 0.5f}, 
+        {0.5f, 0.5f, 0.5f} 
+    };
+     
+    //test rotatex rotatey rotatez
+    vector<vector<float>>after = Rotate3D(cubeVertex,45,45,45);
+    
+    
+
+    // drawCube_fillcolor(after);
+
+    setCubeColor_fillcolor(after);
+    showZbufferGraphcis();
+
+    drawCube_wireframe(after);
 }
 int main(void)
 {
@@ -105,6 +207,7 @@ int main(void)
 
         vector<vector<float>>cubeVertex = 
         {
+            //x,y,z
             {-0.5f, -0.5f, -0.5f}, 
             {0.5f, -0.5f, -0.5f}, 
             {-0.5f, 0.5f, -0.5f}, 
@@ -114,18 +217,14 @@ int main(void)
             {-0.5f, 0.5f, 0.5f}, 
             {0.5f, 0.5f, 0.5f} 
         };
-        vector<vector<float>>after = IOProjection(cubeVertex);
-        // for(int i=0;i<after.size();i++)
-        // {
-        //     cout<<"line "<<i<<":";
-        //     for(int j=0;j<after[0].size();j++)
-        //     {
-        //         cout<<after[i][j]<<" ";
-        //     }
-        //     cout<<endl;
-        // }
-        drawCube_wireframe(after);
-        drawCube_fillcolor(after);
+        // vector<vector<float>>after = IOProjection(cubeVertex);
+        // testRotate3DXYZ();
+        testRotate3D();
+        // drawCube_wireframe(cubeVertex);
+        
+        // drawCube_fillcolor(after);
+        // setCubeColor_fillcolor(after);
+        // testSetTriangleColor();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

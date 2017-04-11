@@ -1,7 +1,9 @@
 #ifndef DRAW2D_H
 #define DRAW2D_H
-extern const float mrender_pointSize;
-
+#include "settings.h"
+#include <vector>
+using namespace std;
+extern vector<vector<zBufferPoint>> zBufferMatrix;
 class point2D
 {
 public:
@@ -36,11 +38,15 @@ public:
 */
 void drawPoint(point2D point,float R,float G,float B,float pointSize);
 
+void setPointColor(point2D point,float R,float G,float B,float depth);
+
 /*
 光栅化画线
 */
 void drawLine_Print(point2D point1,point2D point2,float R,float G,float B);
 void drawLine_DDA(point2D point1,point2D point2,float R,float G,float B);
+
+void setLineColor(point2D point1,point2D point2,float R,float G,float B,float depth);
 
 /*
 光栅化画三角
@@ -48,6 +54,10 @@ void drawLine_DDA(point2D point1,point2D point2,float R,float G,float B);
 void drawTriangle_flatTop(point2D point1,point2D point2,point2D point3,float R,float G,float B);
 void drawTriangle_flatBottom(point2D point1,point2D point2,point2D point3,float R,float G,float B);
 void drawTriangle(point2D point1,point2D point2,point2D point3,float R,float G,float B);
+
+void setTriangleColor_flatTop(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth);
+void setTriangleColor_flatBottom(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth);
+void setTriangleColor(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth);
 
 void resizer2DGraphics(point2D point1,point2D point2,point2D point3,float Sx,float Sy);
 void translate2DGraphics(point2D point1,point2D point2,point2D point3,float Sx,float Sy);

@@ -7,9 +7,7 @@
 #include "vector"
 
 using namespace std;
-
-const float mrender_pointSize = 0.5;
-const float base = 1000;
+int drawPCount =0;
 
 //图形绘制
 /*
@@ -17,12 +15,34 @@ x,y - position R,G,B - color
 */
 void drawPoint(point2D point,float R,float G,float B,float pointSize)
 {
+    
     /* Draw a point */      
     glPointSize(mrender_pointSize);
     glBegin(GL_POINTS);
         glColor3f(R,G,B);
         glVertex2f(point.x,point.y);
     glEnd();
+    if(R)
+    {
+        drawPCount++;
+        // cout<<"drawPoint:"<<drawPCount<<" R:"<<R<<endl;
+    }
+}
+void setPointColor(point2D point,float R,float G,float B,float depth)
+{
+    int pos_x = (int)(point.x * base) + base;
+    int pos_y = (int)(point.y * base) + base;
+    // cout<<pos_x<<" "<<pos_y<<" zBufferPoint"<<endl;
+
+    //error zbp是一个局部变量，他的值函数结束后就被销毁，实际上并没有给矩阵进行复制
+    // zBufferPoint zbp = zBufferMatrix[pos_x][pos_y];
+    // zbp.setColor(R,G,B);
+    //正确写法
+    if(depth <= zBufferMatrix[pos_x][pos_y].depth)
+    {
+        zBufferMatrix[pos_x][pos_y].setColor(R,G,B);
+        zBufferMatrix[pos_x][pos_y].setDepth(depth);
+    }
 }
 /*
 Line
@@ -107,6 +127,33 @@ void drawLine_DDA(point2D point1,point2D point2,float R,float G,float B)
     }
 }
 
+void setLineColor(point2D point1,point2D point2,float R,float G,float B,float depth)
+{
+    float dm = 0,dx = 0,dy = 0;
+    if(fabs(point2.x-point1.x) >= fabs(point2.y-point1.y))
+    {
+        dm = fabs(point2.x-point1.x);
+    }else
+    {
+        dm = fabs(point2.y-point1.y);
+    }
+    dx = (float)(point2.x-point1.x)/(dm*base);
+    dy = (float)(point2.y-point1.y)/(dm*base);
+    for(float i=0;i<dm*base;i++)
+    {
+        point2D tempPoint(point1.x,point1.y);
+        setPointColor(tempPoint,R,G,B,depth);
+        point1.x+=dx;
+        point1.y+=dy;
+    }
+    // for(int i=0;i<base;i++)
+    // {
+        // for(int j=-base;j<0;j++)
+        // {
+        //     zBufferMatrix[j+base][j+base].G = 1;
+        // }
+    // }
+}
 /*
 Line
 Bresenham画线算法：应用最广泛的直线生成算法
@@ -152,10 +199,23 @@ void drawTriangle_flatBottom(point2D point1,point2D point2,point2D point3,float 
     {
         float xl = (i-point1.y)*(point2.x-point1.x)/(point2.y-point1.y)+point1.x;
         float xr = (i-point1.y)*(point3.x-point1.x)/(point3.y-point1.y)+point1.x;
-        cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatBottom"<<endl;
+        // cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatBottom"<<endl;
         point2D point1(xl,i);
         point2D point2(xr,i);
         drawLine_DDA(point1,point2,R,G,B);
+    }
+}
+
+void setTriangleColor_flatBottom(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth)
+{
+    for(float i = point1.y; i>=point2.y ;i-=1/base)
+    {
+        float xl = (i-point1.y)*(point2.x-point1.x)/(point2.y-point1.y)+point1.x;
+        float xr = (i-point1.y)*(point3.x-point1.x)/(point3.y-point1.y)+point1.x;
+        // cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatBottom"<<endl;
+        point2D point1(xl,i);
+        point2D point2(xr,i);
+        setLineColor(point1,point2,R,G,B,depth);
     }
 }
 /*
@@ -172,10 +232,22 @@ void drawTriangle_flatTop(point2D point1,point2D point2,point2D point3,float R,f
     {
         float xl = (i-point3.y)*(point1.x-point3.x)/(point1.y-point3.y)+point3.x;
         float xr = (i-point3.y)*(point2.x-point3.x)/(point2.y-point3.y)+point3.x;
-        cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatTop"<<endl;
+        // cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatTop"<<endl;
         point2D temp1(xl,i);
         point2D temp2(xr,i);
         drawLine_DDA(temp1,temp2,R,G,B);
+    }
+}
+void setTriangleColor_flatTop(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth)
+{
+    for(float i = point1.y; i>=point3.y ;i-=1/base)
+    {
+        float xl = (i-point3.y)*(point1.x-point3.x)/(point1.y-point3.y)+point3.x;
+        float xr = (i-point3.y)*(point2.x-point3.x)/(point2.y-point3.y)+point3.x;
+        // cout<<xl<<" "<<xr<<" "<<i<<"xr drawTriangle_flatTop"<<endl;
+        point2D temp1(xl,i);
+        point2D temp2(xr,i);
+        setLineColor(temp1,temp2,R,G,B,depth);
     }
 }
 /*
@@ -241,7 +313,7 @@ void drawTriangle(point2D point1,point2D point2,point2D point3,float R,float G,f
         xbottom = vc[2].first;
         ybottom = vc[2].second;
         xtmp = (ymid-ytop)*(xbottom-xtop)/(ybottom-ytop)+xtop;
-        cout<<xtop<<" "<<ytop<<" "<<xmid<<" "<<ymid<<" "<<xbottom<<" "<<ybottom<<" "<<xtmp<<endl;
+        // cout<<xtop<<" "<<ytop<<" "<<xmid<<" "<<ymid<<" "<<xbottom<<" "<<ybottom<<" "<<xtmp<<endl;
         point2D top(xtop,ytop);
         point2D tmp(xtmp,ymid);
         point2D mid(xmid,ymid);
@@ -251,6 +323,59 @@ void drawTriangle(point2D point1,point2D point2,point2D point3,float R,float G,f
     }
 }
 
+void setTriangleColor(point2D point1,point2D point2,point2D point3,float R,float G,float B,float depth)
+{
+    float xtop,ytop,xmid,ymid,xtmp,xbottom,ybottom;
+    if(point1.y == point2.y)
+    {
+        if(point3.y>=point1.y)
+        {
+            setTriangleColor_flatBottom(point3,point1,point2,R,G,B,depth);
+        }else
+        {
+            setTriangleColor_flatTop(point1,point2,point3,R,G,B,depth);
+        }
+    }else if(point1.y == point3.y)
+    {
+        if(point2.y >= point1.y)
+        {
+            setTriangleColor_flatBottom(point2,point1,point3,R,G,B,depth);
+        }else
+        {
+            setTriangleColor_flatTop(point1,point3,point2,R,G,B,depth);
+        }
+    }else if(point2.y == point3.y)
+    {
+        if(point1.y>=point2.y)
+        {
+            setTriangleColor_flatBottom(point1,point2,point3,R,G,B,depth);
+        }else
+        {
+            setTriangleColor_flatTop(point2,point3,point1,R,G,B,depth);
+        }
+    }else //如果不是平顶、平底三角形
+    {
+        vector<pair<float,float>>vc;
+        vc.push_back(make_pair(point1.x,point1.y));
+        vc.push_back(make_pair(point2.x,point2.y));
+        vc.push_back(make_pair(point3.x,point3.y));
+        sort(vc.begin(),vc.end(),comp);
+        xtop = vc[0].first;
+        ytop = vc[0].second;
+        xmid = vc[1].first;
+        ymid = vc[1].second;
+        xbottom = vc[2].first;
+        ybottom = vc[2].second;
+        xtmp = (ymid-ytop)*(xbottom-xtop)/(ybottom-ytop)+xtop;
+        cout<<xtop<<" "<<ytop<<" "<<xmid<<" "<<ymid<<" "<<xbottom<<" "<<ybottom<<" "<<xtmp<<endl;
+        point2D top(xtop,ytop);
+        point2D tmp(xtmp,ymid);
+        point2D mid(xmid,ymid);
+        point2D bottom(xbottom,ybottom);
+        setTriangleColor_flatBottom(top,tmp,mid,R,G,B,depth);
+        setTriangleColor_flatTop(mid,tmp,bottom,R,G,B,depth);
+    }
+}
 
 //图形变换
 
