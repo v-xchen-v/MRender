@@ -117,7 +117,7 @@ void setCubeColor_fillcolor(vector<vector<float>>vertexList)
         {4, 5, 7},    
         {4, 6, 7}  
     };
-    for(int i=0;i<3;i++)
+    for(int i=0;i<12;i++)
     {
         point2D point1(vertexList[lineVIndex[i][0]][0],vertexList[lineVIndex[i][0]][1]);
         point2D point2(vertexList[lineVIndex[i][1]][0],vertexList[lineVIndex[i][1]][1]);
@@ -245,9 +245,9 @@ vector<vector<float>> RotatebyY(vector<vector<float>>vc,float a)
         float x = vc[i][0];
         float y = vc[i][1];
         float z = vc[i][2];
-        float newX = cos(a)*x-sin(a)*z;
+        float newX = cos(a)*x+sin(a)*z;
         float newY = y;
-        float newZ = sin(a)*x+cos(a)*z;
+        float newZ = -sin(a)*x+cos(a)*z;
         afterP[i][0] = newX;
         afterP[i][1] = newY;
         afterP[i][2] = newZ;

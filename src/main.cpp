@@ -160,7 +160,7 @@ void testRotate3D()
     };
      
     //test rotatex rotatey rotatez
-    vector<vector<float>>after = Rotate3D(cubeVertex,45,45,45);
+    vector<vector<float>>after = Rotate3D(cubeVertex,15,15,15);
     
     
 

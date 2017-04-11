@@ -9,7 +9,7 @@ public:
 	float G;
 	float B;
 	float depth;
-	zBufferPoint():R(0),G(0),B(0),depth(1){};//(0,0,0)背景色-黑色 深度初始化为最深
+	zBufferPoint():R(0),G(0),B(0),depth(-1){};//(0,0,0)背景色-黑色 深度初始化为最深
 	zBufferPoint(float r,float g,float b,float d):R(r),G(g),B(b),depth(d){};
 	void setColor(float r,float g,float b)
 	{

@@ -38,7 +38,7 @@ void setPointColor(point2D point,float R,float G,float B,float depth)
     // zBufferPoint zbp = zBufferMatrix[pos_x][pos_y];
     // zbp.setColor(R,G,B);
     //正确写法
-    if(depth <= zBufferMatrix[pos_x][pos_y].depth)
+    if(depth >= zBufferMatrix[pos_x][pos_y].depth)
     {
         zBufferMatrix[pos_x][pos_y].setColor(R,G,B);
         zBufferMatrix[pos_x][pos_y].setDepth(depth);
